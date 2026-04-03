@@ -3,188 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECHO SYSTEM - IoT Cloud Monitor</title>
+    <title>ECHO SYSTEM - Command Center</title>
     <style>
         :root {
-            --bg-color: #0a192f;
-            --card-bg: #112240;
-            --accent-cyan: #64ffda;
-            --alert-red: #ff4b2b;
+            --bg-color: #050a14;
+            --card-bg: #0b1528;
+            --accent-cyan: #00f2ff;
+            --alert-red: #ff3c3c;
             --text-main: #e6f1ff;
-            --text-dim: #8892b0;
+            --text-dim: #707d91;
+            --border: 1px solid rgba(0, 242, 255, 0.2);
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace; /* Aspect tehnic */
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
         }
 
-        .container {
-            background-color: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            width: 90%;
-            max-width: 450px;
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        @media (max-width: 600px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: var(--border);
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            border: 1px solid rgba(100, 255, 218, 0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         h1 {
             color: var(--accent-cyan);
-            letter-spacing: 2px;
-            margin-bottom: 0.5rem;
             text-transform: uppercase;
-        }
-
-        .subtitle {
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            margin-bottom: 2rem;
-            letter-spacing: 1px;
-        }
-
-        .data-card {
-            background: rgba(10, 25, 47, 0.5);
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            letter-spacing: 5px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--accent-cyan);
+            padding-bottom: 10px;
         }
 
         .label {
             color: var(--text-dim);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            margin-bottom: 0.5rem;
+            margin-bottom: 15px;
             display: block;
         }
 
         .value {
             font-size: 3rem;
             font-weight: bold;
-            display: block;
         }
 
-        .unit {
-            font-size: 1.2rem;
-            margin-left: 5px;
-            color: var(--text-dim);
+        .status-ok { color: var(--accent-cyan); }
+        .status-alert { color: var(--alert-red); animation: blink 1s infinite; }
+
+        /* SECTIUNE JURNAL */
+        .journal-container {
+            grid-column: 1 / -1;
+            background: var(--card-bg);
+            border: var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: left;
         }
 
-        /* Clasele pentru Status */
-        .status-ok {
+        .journal-header {
             color: var(--accent-cyan);
-            text-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+            border-bottom: 1px solid var(--text-dim);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
         }
 
-        .status-alert {
-            color: var(--alert-red);
-            text-shadow: 0 0 15px rgba(255, 75, 43, 0.4);
+        .journal-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 250px;
+            overflow-y: auto;
         }
 
-        .footer {
-            margin-top: 2rem;
-            font-size: 0.7rem;
-            color: var(--text-dim);
+        .journal-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
         }
 
-        #last-update {
-            color: var(--accent-cyan);
-            font-weight: bold;
-        }
+        .journal-entry:nth-child(even) { background: rgba(255,255,255,0.02); }
 
-        /* Animatie puls pentru Pericol */
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-
-        .pulse-effect {
-            animation: pulse 1s infinite;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h1>ECHO SYSTEM</h1>
-        <div class="subtitle">IOT CLOUD MONITOR V1.1</div>
-
-        <div class="data-card">
-            <span class="label">Distanță Obstacol</span>
-            <span id="distanta" class="value">--<span class="unit">cm</span></span>
-        </div>
-
-        <div class="data-card">
-            <span class="label">Status Perimetru</span>
-            <span id="alerta" class="value status-ok">NOMINAL</span>
-        </div>
-
-        <div class="footer">
-            Ultima actualizare Cloud: <span id="last-update">--:--:--</span>
-        </div>
-    </div>
-
-    <script>
-        // CONFIGURARE THINGSPEAK
-        const channelID = '3325389';
-        const readAPIKey = '446NMXGKO5WC319U';
-
-        async function fetchThingSpeakData() {
-            const url = `https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}&nocache=${Date.now()}`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data && data.field1 !== null) {
-                    const distantaVal = parseInt(data.field1);
-                    updateInterface(distantaVal, data.created_at);
-                }
-            } catch (error) {
-                console.error("Eroare la preluarea datelor:", error);
-                document.getElementById('alerta').innerText = "OFFLINE";
-            }
-        }
-
-        function updateInterface(dist, time) {
-            // 1. Update Distanță
-            document.getElementById('distanta').innerHTML = `${dist}<span class="unit">cm</span>`;
-            
-            // 2. Logică Alertă (Sincronizată cu Arduino - 10cm)
-            const alertaEl = document.getElementById('alerta');
-            
-            if (dist <= 10 && dist > 0) {
-                alertaEl.innerText = "PERICOL";
-                alertaEl.className = "value status-alert pulse-effect";
-            } 
-            else if (dist === 0) {
-                alertaEl.innerText = "BLOCAT/0 CM";
-                alertaEl.className = "value status-alert";
-            }
-            else {
-                alertaEl.innerText = "NOMINAL";
-                alertaEl.className = "value status-ok";
-            }
-
-            // 3. Update Timp
-            const date = new Date(time);
-            document.getElementById('last-update').innerText = date.toLocaleTimeString();
-        }
-
-        // Pornim monitorizarea
-        fetchThingSpeakData();
-        
-        // Refresh la fiecare 16 secunde (limita ThingSpeak)
-        setInterval(fetchThingSpeakData, 16000);
-    </script>
-</body>
-</html>
+        .tag-button {
+            background: #1a2f4d;
+            color: #79a6ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size:
