@@ -3,122 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECHO Dashboard - Live Cloud</title>
+    <title>ECHO SYSTEM - IoT Cloud Monitor</title>
     <style>
         :root {
             --bg-color: #0a192f;
-            --container-bg: #112240;
-            --accent-color: #64ffda;
-            --text-main: #ccd6f6;
+            --card-bg: #112240;
+            --accent-cyan: #64ffda;
+            --alert-red: #ff4b2b;
+            --text-main: #e6f1ff;
             --text-dim: #8892b0;
-            --alert-color: #f44336;
         }
 
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             margin: 0;
         }
 
-        .container { 
-            background: var(--container-bg); 
-            padding: 2.5rem; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
-            border-top: 5px solid var(--accent-color); 
-            width: 360px; 
+        .container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 450px;
             text-align: center;
+            border: 1px solid rgba(100, 255, 218, 0.1);
         }
 
-        h1 { color: var(--accent-color); font-size: 1.8rem; margin-bottom: 0.2rem; letter-spacing: 2px; }
-        .subtitle { color: var(--text-dim); font-size: 0.7rem; margin-bottom: 2rem; display: block; text-transform: uppercase; letter-spacing: 1px;}
+        h1 {
+            color: var(--accent-cyan);
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
 
-        .stat-card {
-            background: rgba(2, 12, 27, 0.5);
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .data-card {
+            background: rgba(10, 25, 47, 0.5);
             padding: 1.5rem;
             border-radius: 12px;
-            margin-bottom: 1rem;
-            border: 1px solid #233554;
-            transition: 0.3s;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .label { display: block; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.8rem; }
-        .value { font-family: 'Courier New', monospace; font-size: 2.8rem; font-weight: bold; color: var(--text-main); }
+        .label {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
 
-        .status-ok { color: var(--accent-color); }
-        .status-alert { color: var(--alert-color); text-shadow: 0 0 10px var(--alert-color); animation: pulse 1s infinite; }
+        .value {
+            font-size: 3rem;
+            font-weight: bold;
+            display: block;
+        }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .unit {
+            font-size: 1.2rem;
+            margin-left: 5px;
+            color: var(--text-dim);
+        }
 
-        .sync-box { margin-top: 1.5rem; font-size: 0.7rem; color: var(--text-dim); border-top: 1px solid #233554; padding-top: 1rem; }
-        #last-update { color: var(--accent-color); font-weight: bold; }
+        /* Clasele pentru Status */
+        .status-ok {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+        }
+
+        .status-alert {
+            color: var(--alert-red);
+            text-shadow: 0 0 15px rgba(255, 75, 43, 0.4);
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        #last-update {
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        /* Animatie puls pentru Pericol */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .pulse-effect {
+            animation: pulse 1s infinite;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>ECHO SYSTEM</h1>
-    <span class="subtitle">IoT Cloud Monitor V1.0</span>
+    <div class="container">
+        <h1>ECHO SYSTEM</h1>
+        <div class="subtitle">IOT CLOUD MONITOR V1.1</div>
 
-    <div class="stat-card">
-        <span class="label">Distanță Obstacol</span>
-        <span id="distanta" class="value">-- cm</span>
+        <div class="data-card">
+            <span class="label">Distanță Obstacol</span>
+            <span id="distanta" class="value">--<span class="unit">cm</span></span>
+        </div>
+
+        <div class="data-card">
+            <span class="label">Status Perimetru</span>
+            <span id="alerta" class="value status-ok">NOMINAL</span>
+        </div>
+
+        <div class="footer">
+            Ultima actualizare Cloud: <span id="last-update">--:--:--</span>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <span class="label">Status Perimetru</span>
-        <span id="alerta" class="value status-ok">SCANARE</span>
-    </div>
+    <script>
+        // CONFIGURARE THINGSPEAK
+        const channelID = '3325389';
+        const readAPIKey = '446NMXGKO5WC319U';
 
-    <div class="sync-box">
-        Ultima actualizare Cloud: <span id="last-update">Așteptare...</span>
-    </div>
-</div>
-
-<script>
-    // --- DATELE TALE CONFIGURATE ---
-    const CHANNEL_ID = '3325389';
-    const READ_API_KEY = '446NMXGKO5WC319U';
-
-    async function fetchData() {
-        const url = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/1/last.json?api_key=${READ_API_KEY}`;
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data && data.field1 !== null) {
-                updateInterface(parseInt(data.field1), data.created_at);
+        async function fetchThingSpeakData() {
+            const url = `https://api.thingspeak.com/channels/${channelID}/fields/1/last.json?api_key=${readAPIKey}&nocache=${Date.now()}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data && data.field1 !== null) {
+                    const distantaVal = parseInt(data.field1);
+                    updateInterface(distantaVal, data.created_at);
+                }
+            } catch (error) {
+                console.error("Eroare la preluarea datelor:", error);
+                document.getElementById('alerta').innerText = "OFFLINE";
             }
-        } catch (error) {
-            console.error("Eroare la sincronizare:", error);
         }
-    }
 
-    function updateInterface(dist, time) {
-        document.getElementById('distanta').innerText = dist + " cm";
+        function updateInterface(dist, time) {
+            // 1. Update Distanță
+            document.getElementById('distanta').innerHTML = `${dist}<span class="unit">cm</span>`;
+            
+            // 2. Logică Alertă (Sincronizată cu Arduino - 10cm)
+            const alertaEl = document.getElementById('alerta');
+            
+            if (dist <= 10 && dist > 0) {
+                alertaEl.innerText = "PERICOL";
+                alertaEl.className = "value status-alert pulse-effect";
+            } 
+            else if (dist === 0) {
+                alertaEl.innerText = "BLOCAT/0 CM";
+                alertaEl.className = "value status-alert";
+            }
+            else {
+                alertaEl.innerText = "NOMINAL";
+                alertaEl.className = "value status-ok";
+            }
+
+            // 3. Update Timp
+            const date = new Date(time);
+            document.getElementById('last-update').innerText = date.toLocaleTimeString();
+        }
+
+        // Pornim monitorizarea
+        fetchThingSpeakData();
         
-        const alertaEl = document.getElementById('alerta');
-        if (dist < 50 && dist > 0) {
-            alertaEl.innerText = "PERICOL";
-            alertaEl.className = "value status-alert";
-        } else {
-            alertaEl.innerText = "NOMINAL";
-            alertaEl.className = "value status-ok";
-        }
-
-        const date = new Date(time);
-        document.getElementById('last-update').innerText = date.toLocaleTimeString();
-    }
-
-    // ThingSpeak Free are limita de 15 secunde
-    setInterval(fetchData, 15500); 
-    fetchData(); 
-</script>
+        // Refresh la fiecare 16 secunde (limita ThingSpeak)
+        setInterval(fetchThingSpeakData, 16000);
+    </script>
 </body>
 </html>
