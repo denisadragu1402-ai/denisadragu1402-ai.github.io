@@ -132,7 +132,7 @@ db.ref('jurnal').limitToLast(1).on('child_added', (snapshot) => {
         const lastPressEl = document.getElementById('last-press');
         lastPressEl.innerText = oraLocala;
         
-        // Efect vizual de alertă la primire date noi
+        // Efect vizual de alertă la primire date noi.
         lastPressEl.style.color = "white";
         setTimeout(() => { lastPressEl.style.color = "var(--cyan)"; }, 700);
     } else {
