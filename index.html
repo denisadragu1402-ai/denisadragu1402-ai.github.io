@@ -3,136 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECHO SYSTEM - Command Center</title>
+    <title>ECHO COMMAND CENTER</title>
     <style>
         :root {
-            --bg-color: #050a14;
-            --card-bg: #0b1528;
-            --accent-cyan: #00f2ff;
-            --alert-red: #ff3c3c;
-            --text-main: #e6f1ff;
-            --text-dim: #707d91;
-            --border: 1px solid rgba(0, 242, 255, 0.2);
+            --bg: #050a14;
+            --card: #0b1528;
+            --cyan: #00f2ff;
+            --red: #ff3c3c;
+            --text: #e6f1ff;
+            --dim: #707d91;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Courier New', Courier, monospace; /* Aspect tehnic */
-            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: var(--cyan);
+            letter-spacing: 4px;
+            border-bottom: 2px solid var(--cyan);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
         }
 
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             width: 100%;
             max-width: 900px;
         }
 
-        @media (max-width: 600px) {
-            .dashboard { grid-template-columns: 1fr; }
-        }
-
         .card {
-            background: var(--card-bg);
-            border: var(--border);
+            background: var(--card);
+            border: 1px solid rgba(0, 242, 255, 0.2);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
-        h1 {
-            color: var(--accent-cyan);
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--accent-cyan);
-            padding-bottom: 10px;
-        }
+        .label { color: var(--dim); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .value { font-size: 3rem; font-weight: bold; }
 
-        .label {
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            display: block;
-        }
+        .status-ok { color: var(--cyan); }
+        .status-alert { color: var(--red); animation: blink 1s infinite; }
+        .status-btn { color: #f7ff00; text-shadow: 0 0 10px rgba(247, 255, 0, 0.5); }
 
-        .value {
-            font-size: 3rem;
-            font-weight: bold;
-        }
-
-        .status-ok { color: var(--accent-cyan); }
-        .status-alert { color: var(--alert-red); animation: blink 1s infinite; }
-
-        /* SECTIUNE JURNAL */
-        .journal-container {
-            grid-column: 1 / -1;
-            background: var(--card-bg);
-            border: var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: left;
-        }
-
-        .journal-header {
-            color: var(--accent-cyan);
-            border-bottom: 1px solid var(--text-dim);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+        /* JURNAL */
+        .journal-container { grid-column: 1 / -1; text-align: left; }
+        .journal-list { list-style: none; padding: 0; margin-top: 15px; max-height: 200px; overflow-y: auto; }
+        .entry {
             display: flex;
             justify-content: space-between;
-        }
-
-        .journal-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-
-        .journal-entry {
-            padding: 8px 0;
+            padding: 8px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
+            font-size: 0.85rem;
         }
+        .tag { background: #1a2f4d; color: var(--cyan); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 10px; }
 
-        .journal-entry:nth-child(even) { background: rgba(255,255,255,0.02); }
-
-        .tag-button {
-            background: #1a2f4d;
-            color: #79a6ff;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-right: 10px;
-        }
-
-        .footer {
-            margin-top: 30px;
-            color: var(--text-dim);
-            font-size: 0.8rem;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-
-        /* Scrollbar subtil */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--accent-cyan); }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .footer { margin-top: 40px; font-size: 0.7rem; color: var(--dim); }
     </style>
 </head>
 <body>
@@ -146,31 +83,27 @@
         </div>
 
         <div class="card">
-            <span class="label">Monitor Perimetru</span>
+            <span class="label">Status Perimetru</span>
             <span id="status" class="value status-ok">SCANNING</span>
         </div>
 
-        <div class="journal-container card">
-            <div class="journal-header">
-                <span>JURNAL ACTIVITATE BUTON</span>
-                <span style="font-size: 0.7rem;">ULTIMELE 10 INTRĂRI</span>
-            </div>
+        <div class="card journal-container">
+            <span class="label">Jurnal Activitate Buton (Ultimele 10)</span>
             <ul id="journal-list" class="journal-list">
-                <li class="journal-entry" style="color: var(--text-dim);">Se încarcă datele...</li>
+                <li class="entry">Sincronizare cu serverul...</li>
             </ul>
         </div>
     </div>
 
     <div class="footer">
-        SYNC_TOKEN: <span id="sync-time">--:--:--</span> | STARE_SISTEM: ACTIV
+        SERVER_REFRESH: 16s | SYNC_TIME: <span id="sync-time">--:--:--</span>
     </div>
 
     <script>
         const channelID = '3325389';
         const readKey = '446NMXGKO5WC319U';
 
-        async function updateDashboard() {
-            // Cerem ultimele 10 rezultate ca să avem istoric pentru jurnal
+        async function updateData() {
             const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=10&api_key=${readKey}&nocache=${Date.now()}`;
             
             try {
@@ -178,15 +111,19 @@
                 const data = await response.json();
                 
                 if (data.feeds && data.feeds.length > 0) {
-                    const lastFeed = data.feeds[data.feeds.length - 1];
-                    
-                    // 1. Update Senzor Distanta
-                    const dist = parseInt(lastFeed.field1);
-                    document.getElementById('distanta').innerText = dist + " cm";
+                    const latest = data.feeds[data.feeds.length - 1];
+                    const dist = parseInt(latest.field1);
+                    const btn = parseInt(latest.field2);
 
-                    // 2. Update Status Perimetru
+                    // 1. Update Distanta (Filtram vizual cifra 0 pe site daca e dubioasa)
+                    document.getElementById('distanta').innerText = (dist > 0) ? dist + " cm" : "SCANNING...";
+
+                    // 2. Update Status (Ierarhie: Buton > Distanta > Nominal)
                     const statusEl = document.getElementById('status');
-                    if (dist <= 10 && dist > 0) {
+                    if (btn === 1) {
+                        statusEl.innerText = "ACTIVAT";
+                        statusEl.className = "value status-btn";
+                    } else if (dist <= 10 && dist > 0) {
                         statusEl.innerText = "PERICOL";
                         statusEl.className = "value status-alert";
                     } else {
@@ -194,53 +131,24 @@
                         statusEl.className = "value status-ok";
                     }
 
-                    // 3. Update Jurnal Buton (Field 2)
-                    updateJournal(data.feeds);
+                    // 3. Update Jurnal
+                    const listEl = document.getElementById('journal-list');
+                    listEl.innerHTML = "";
+                    [...data.feeds].reverse().forEach(f => {
+                        if (f.field2 == "1") {
+                            const time = new Date(f.created_at).toLocaleTimeString();
+                            const date = new Date(f.created_at).toLocaleDateString();
+                            listEl.innerHTML += `<li class="entry"><span><span class="tag">BUTON</span>${date}</span><span>${time}</span></li>`;
+                        }
+                    });
 
-                    // 4. Update Footer Time
-                    document.getElementById('sync-time').innerText = new Date(lastFeed.created_at).toLocaleTimeString();
+                    document.getElementById('sync-time').innerText = new Date(latest.created_at).toLocaleTimeString();
                 }
-            } catch (error) {
-                console.error("Eroare comunicatie:", error);
-            }
+            } catch (e) { console.log("Eroare date:", e); }
         }
 
-        function updateJournal(feeds) {
-            const listEl = document.getElementById('journal-list');
-            listEl.innerHTML = ""; // Curatam lista
-
-            // Inversam feeds ca sa apara cel mai nou sus
-            const reversedFeeds = [...feeds].reverse();
-
-            let entriesFound = 0;
-
-            reversedFeeds.forEach(feed => {
-                // Verificam daca Field 2 are valoare (Buton apasat)
-                // Poti schimba conditia in functie de ce trimite Arduino (ex: if feed.field2 == "1")
-                if (feed.field2 !== null) {
-                    const date = new Date(feed.created_at);
-                    const dateStr = date.toLocaleDateString();
-                    const timeStr = date.toLocaleTimeString();
-
-                    const li = document.createElement('li');
-                    li.className = 'journal-entry';
-                    li.innerHTML = `
-                        <span><span class="tag-button">BUTON</span> ${dateStr}</span>
-                        <span style="color: var(--accent-cyan);">${timeStr}</span>
-                    `;
-                    listEl.appendChild(li);
-                    entriesFound++;
-                }
-            });
-
-            if (entriesFound === 0) {
-                listEl.innerHTML = "<li class='journal-entry'>Nicio activitate înregistrată pe Buton.</li>";
-            }
-        }
-
-        // Refresh la 16 secunde
-        setInterval(updateDashboard, 16000);
-        updateDashboard();
+        setInterval(updateData, 16000);
+        updateData();
     </script>
 </body>
 </html>
