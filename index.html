@@ -115,20 +115,26 @@
             }
         });
 
-        // 3. LOGICA ULTIMA APĂSARE (Afișează doar ora ultimei intrări)
-        db.ref('jurnal').limitToLast(1).on('child_added', (snapshot) => {
-            const now = new Date();
-            const oraLocala = now.getHours().toString().padStart(2, '0') + ":" + 
-                             now.getMinutes().toString().padStart(2, '0') + ":" + 
-                             now.getSeconds().toString().padStart(2, '0');
+// 3. LOGICA ULTIMA APĂSARE (Afișează ora salvată în DB, nu ora refresh-ului)
+db.ref('jurnal').orderByKey().limitToLast(1).on('child_added', (snapshot) => {
+    const data = snapshot.val();
+    
+    // Verificăm dacă avem un timestamp salvat în obiect (ex: data.t)
+    // Dacă nu ai timestamp în DB, va trebui să modifici puțin modul în care Arduino trimite datele (vezi mai jos)
+    if (data && data.timestamp) {
+        const eventTime = new Date(data.timestamp);
+        const oraLocala = eventTime.getHours().toString().padStart(2, '0') + ":" + 
+                         eventTime.getMinutes().toString().padStart(2, '0') + ":" + 
+                         eventTime.getSeconds().toString().padStart(2, '0');
 
-            const lastPressEl = document.getElementById('last-press');
-            lastPressEl.innerText = oraLocala;
-            
-            // Mic efect vizual de "flash" când se actualizează
-            lastPressEl.style.color = "white";
-            setTimeout(() => { lastPressEl.style.color = "var(--cyan)"; }, 500);
-        });
+        const lastPressEl = document.getElementById('last-press');
+        lastPressEl.innerText = oraLocala;
+        
+        // Efect vizual discret
+        lastPressEl.style.color = "white";
+        setTimeout(() => { lastPressEl.style.color = "var(--cyan)"; }, 500);
+    }
+});
     </script>
 </body>
 </html>
