@@ -8,85 +8,194 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; text-align: center; }
-        .container { margin-top: 50px; }
-        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; display: inline-block; min-width: 250px; margin: 10px; border: 1px solid #333; }
-        .live-clock { color: #00ff88; font-size: 1.5em; font-weight: bold; }
-        .last-press { color: #ff3e3e; font-size: 1.2em; }
-        .distanta { font-size: 3em; color: #00d4ff; }
-        .status { padding: 10px; border-radius: 5px; margin-top: 10px; display: inline-block; }
-        .active { background: #ff3e3e; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #0b0b0b; 
+            color: white; 
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Ora live - discretă, în colțul din dreapta sus */
+        #live-clock {
+            position: fixed;
+            top: 20px;
+            right: 25px;
+            font-size: 0.85em;
+            color: #444; /* Culoare gri închisă pentru a fi discretă */
+            font-family: monospace;
+        }
+
+        h1 { 
+            margin-bottom: 40px; 
+            letter-spacing: 4px; 
+            color: #ffffff; 
+            font-weight: 300;
+        }
+
+        .dashboard {
+            background: #161616;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            text-align: center;
+            width: 350px;
+            border: 1px solid #222;
+        }
+
+        .label { 
+            font-size: 0.75em; 
+            color: #666; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            letter-spacing: 1px;
+        }
+        
+        /* Valori principale */
+        .value { 
+            font-size: 4em; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            transition: all 0.4s ease; 
+        }
+
+        .status-text { 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            margin-top: 5px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.4s ease;
+        }
+
+        /* Stări culori */
+        .safe { color: #2ecc71; }    /* Verde */
+        .danger { color: #e74c3c; }  /* Roșu */
+        .neutral { color: #3498db; } /* Albastru */
+
+        /* Secțiunea de jos pentru buton */
+        .last-press-box {
+            margin-top: 35px;
+            padding-top: 20px;
+            border-top: 1px solid #252525;
+        }
+
+        #last-time {
+            font-size: 1.4em;
+            color: #eee;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .blink {
+            animation: blinker 1s linear 2;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0.3; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>PROIECT ECHO</h1>
+    <div id="live-clock">00:00:00</div>
 
-        <div class="card">
-            <p>ORA LIVE</p>
-            <div id="clock" class="live-clock">00:00:00</div>
-        </div>
+    <h1>ECHO SYSTEM</h1>
 
-        <div class="card">
-            <p>DISTANȚĂ SENZOR</p>
-            <div id="dist" class="distanta">0</div>
-            <p>cm</p>
-        </div>
+    <div class="dashboard">
+        <div class="label">Distanță Detectată</div>
+        <div id="dist-val" class="value neutral">--</div>
+        
+        <div class="label">Stare Senzor</div>
+        <div id="status-msg" class="status-text">INIȚIALIZARE...</div>
 
-        <div class="card">
-            <p>ULTIMA ACTIVARE BUTON</p>
-            <div id="lastTime" class="last-press">--:--:--</div>
-            <div id="btnStatus" class="status">AȘTEPTARE...</div>
+        <div class="last-press-box">
+            <div class="label">Ultima activare buton</div>
+            <span id="last-time">--:--:--</span>
         </div>
     </div>
 
     <script>
-        // CONFIGURARE FIREBASE (Pune datele tale aici!)
+        // --- CONFIGURARE FIREBASE ---
         const firebaseConfig = {
             databaseURL: "https://echo-bd4aa-default-rtdb.europe-west1.firebasedatabase.app"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. FUNCȚIE ORA LIVE
+        // 1. Funcție Ora Live (Discretă)
         function updateClock() {
             const now = new Date();
-            const timeString = now.toLocaleTimeString('ro-RO');
-            document.getElementById('clock').innerText = timeString;
+            const timeString = now.getHours().toString().padStart(2, '0') + ":" + 
+                               now.getMinutes().toString().padStart(2, '0') + ":" + 
+                               now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('live-clock').innerText = timeString;
         }
-        setInterval(updateClock, 1000); // Update la fiecare secundă
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        // 2. ASCULTARE DATE DIN FIREBASE
-        
-        // Ascultăm distanța
+        // 2. Elemente DOM
+        const distElement = document.getElementById('dist-val');
+        const statusElement = document.getElementById('status-msg');
+        const lastTimeElement = document.getElementById('last-time');
+
+        // --- LOGICĂ FIREBASE ---
+
+        // Flag pentru a ignora prima citire la refresh
+        let primaIncarcareButon = true;
+
+        // Ascultare Distanță
         db.ref('sistem').on('value', (snapshot) => {
             const data = snapshot.val();
-            if(data) {
-                document.getElementById('dist').innerText = data.distanta;
+            if (data) {
+                const d = data.distanta;
+                distElement.innerText = d + " cm";
+
+                if (d <= 10) {
+                    distElement.className = "value danger";
+                    statusElement.innerText = "PERICOL: OBIECT APROAPE!";
+                    statusElement.className = "status-text danger";
+                } else {
+                    distElement.className = "value safe";
+                    statusElement.innerText = "SISTEM OK";
+                    statusElement.className = "status-text safe";
+                }
             }
         });
 
-        // Ascultăm trigger-ul de buton
+        // Ascultare Buton (cu protecție la refresh)
         db.ref('trigger_buton').on('value', (snapshot) => {
             const val = snapshot.val();
-            if(val) {
-                // Când valoarea se schimbă, înseamnă că butonul a fost apăsat
+            
+            if (val) {
+                // Dacă este prima dată când primim datele după deschiderea paginii, ignorăm
+                if (primaIncarcareButon) {
+                    primaIncarcareButon = false;
+                    console.log("Prima citire ignorată (anti-refresh)");
+                    return; 
+                }
+
+                // Dacă ajungem aici, înseamnă că butonul a fost apăsat PE BUNE acum
                 const now = new Date();
-                const oraApasare = now.toLocaleTimeString('ro-RO');
+                const oraApasare = now.getHours().toString().padStart(2, '0') + ":" + 
+                                   now.getMinutes().toString().padStart(2, '0') + ":" + 
+                                   now.getSeconds().toString().padStart(2, '0');
                 
-                document.getElementById('lastTime').innerText = oraApasare;
+                lastTimeElement.innerText = oraApasare;
                 
                 // Efect vizual de alertă
-                const statusDiv = document.getElementById('btnStatus');
-                statusDiv.innerText = "BUTON APĂSAT!";
-                statusDiv.className = "status active";
+                lastTimeElement.className = "blink";
+                lastTimeElement.style.color = "#e74c3c";
                 
-                setTimeout(() => {
-                    statusDiv.className = "status";
-                    statusDiv.innerText = "OK";
-                }, 3000); // Revine la normal după 3 secunde
+                setTimeout(() => { 
+                    lastTimeElement.style.color = "#eee";
+                    lastTimeElement.className = "";
+                }, 2000);
             }
         });
     </script>
