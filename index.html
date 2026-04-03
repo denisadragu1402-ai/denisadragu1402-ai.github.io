@@ -2,111 +2,91 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>ECHO RT - Command Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECHO Dashboard</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <style>
-        :root {
-            --bg: #020617; --card: #0f172a; --cyan: #00f2ff;
-            --green: #22c55e; --orange: #f59e0b; --red: #ef4444;
-            --text: #f8fafc; --border: #1e293b;
-        }
-        body { 
-            background-color: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', sans-serif; display: flex; 
-            flex-direction: column; align-items: center; padding: 40px 20px; margin: 0; 
-        }
-        .dashboard { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 25px; width: 100%; max-width: 1000px; 
-        }
-        .card { 
-            background: var(--card); border: 1px solid var(--border); 
-            padding: 40px 20px; border-radius: 24px; text-align: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-        }
-        .label { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; display: block; }
-        .value { font-size: 3.5rem; font-weight: 900; display: block; }
-        
-        .st-siguranta { color: var(--green); }
-        .st-obstacol { color: var(--orange); }
-        .st-pericol { color: var(--red); animation: pulse 1s infinite; }
-        .st-ora { color: var(--cyan); font-family: 'Courier New', monospace; text-shadow: 0 0 10px var(--cyan); }
-
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; text-align: center; }
+        .container { margin-top: 50px; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; display: inline-block; min-width: 250px; margin: 10px; border: 1px solid #333; }
+        .live-clock { color: #00ff88; font-size: 1.5em; font-weight: bold; }
+        .last-press { color: #ff3e3e; font-size: 1.2em; }
+        .distanta { font-size: 3em; color: #00d4ff; }
+        .status { padding: 10px; border-radius: 5px; margin-top: 10px; display: inline-block; }
+        .active { background: #ff3e3e; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <h1 style="color: var(--cyan); letter-spacing: 6px; margin-bottom: 50px;">ECHO <span style="color:white">RT CENTER</span></h1>
+    <div class="container">
+        <h1>PROIECT ECHO</h1>
 
-    <div class="dashboard">
         <div class="card">
-            <span class="label">Radar Distanță</span>
-            <span id="dist-val" class="value">-- cm</span>
+            <p>ORA LIVE</p>
+            <div id="clock" class="live-clock">00:00:00</div>
         </div>
 
         <div class="card">
-            <span class="label">Status Sistem</span>
-            <span id="status-val" class="value" style="font-size: 2.2rem;">INIT...</span>
+            <p>DISTANȚĂ SENZOR</p>
+            <div id="dist" class="distanta">0</div>
+            <p>cm</p>
         </div>
 
         <div class="card">
-            <span class="label">Ultima Apăsare Buton</span>
-            <span id="time-val" class="value st-ora">--:--:--</span>
-            <span style="font-size: 0.7rem; color: #475569; margin-top: 15px; display: block;">Sincronizat cu ceasul local</span>
+            <p>ULTIMA ACTIVARE BUTON</p>
+            <div id="lastTime" class="last-press">--:--:--</div>
+            <div id="btnStatus" class="status">AȘTEPTARE...</div>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = { databaseURL: "https://echo-bd4aa-default-rtdb.europe-west1.firebasedatabase.app/" };
+        // CONFIGURARE FIREBASE (Pune datele tale aici!)
+        const firebaseConfig = {
+            databaseURL: "https://echo-bd4aa-default-rtdb.europe-west1.firebasedatabase.app"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. LOGICA STATUS & DISTANTA
+        // 1. FUNCȚIE ORA LIVE
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ro-RO');
+            document.getElementById('clock').innerText = timeString;
+        }
+        setInterval(updateClock, 1000); // Update la fiecare secundă
+
+        // 2. ASCULTARE DATE DIN FIREBASE
+        
+        // Ascultăm distanța
         db.ref('sistem').on('value', (snapshot) => {
             const data = snapshot.val();
-            if(!data) return;
-
-            const d = data.distanta;
-            const dv = document.getElementById('dist-val');
-            const sv = document.getElementById('status-val');
-            
-            dv.innerText = d + " cm";
-
-            // REGULA TA: Pericol <= 10 | Obstacol 11-100 | Siguranta > 100
-            if (d <= 10 && d > 0) {
-                sv.innerText = "PERICOL";
-                sv.className = "value st-pericol";
-                dv.className = "value st-pericol";
-            } 
-            else if (d > 10 && d <= 100) {
-                sv.innerText = "OBSTACOL";
-                sv.className = "value st-obstacol";
-                dv.className = "value st-obstacol";
-            } 
-            else {
-                sv.innerText = "SIGURANȚĂ";
-                sv.className = "value st-siguranta";
-                dv.className = "value st-siguranta";
+            if(data) {
+                document.getElementById('dist').innerText = data.distanta;
             }
         });
 
-        // 2. LOGICA ORA (REPARATA)
-        // Ascultam orice schimbare la trigger_buton
+        // Ascultăm trigger-ul de buton
         db.ref('trigger_buton').on('value', (snapshot) => {
-            if (snapshot.exists()) {
-                // In momentul in care Firebase ne spune ca butonul a fost apasat,
-                // luam ora REALA de pe ceasul laptopului tau.
-                const acum = new Date();
-                const h = acum.getHours().toString().padStart(2, '0');
-                const m = acum.getMinutes().toString().padStart(2, '0');
-                const s = acum.getSeconds().toString().padStart(2, '0');
+            const val = snapshot.val();
+            if(val) {
+                // Când valoarea se schimbă, înseamnă că butonul a fost apăsat
+                const now = new Date();
+                const oraApasare = now.toLocaleTimeString('ro-RO');
                 
-                const oraFinala = h + ":" + m + ":" + s;
+                document.getElementById('lastTime').innerText = oraApasare;
                 
-                document.getElementById('time-val').innerText = oraFinala;
-                console.log("Buton detectat! Ora setata: " + oraFinala);
+                // Efect vizual de alertă
+                const statusDiv = document.getElementById('btnStatus');
+                statusDiv.innerText = "BUTON APĂSAT!";
+                statusDiv.className = "status active";
+                
+                setTimeout(() => {
+                    statusDiv.className = "status";
+                    statusDiv.innerText = "OK";
+                }, 3000); // Revine la normal după 3 secunde
             }
         });
     </script>
