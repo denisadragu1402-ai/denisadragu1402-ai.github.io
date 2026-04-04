@@ -73,3 +73,92 @@
         /* Status primire date (Butonul fizic) */
         .status-box {
             margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #3d2354;
+        }
+
+        .active-alert {
+            color: var(--neon-pink) !important;
+            animation: pulse 1s infinite;
+            font-weight: bold;
+        }
+
+        .footer-tech {
+            position: fixed;
+            bottom: 15px;
+            font-size: 0.7em;
+            color: var(--text-gray);
+            display: flex;
+            gap: 20px;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <h1>ECHO SYSTEM</h1>
+
+    <div class="dashboard">
+        <div class="label">Distanță Senzor</div>
+        <div id="dist-val" class="value">-- cm</div>
+        
+        <div class="label">Control Robot</div>
+        <button class="btn-ham" onclick="trimiteHam()">Comandă: HAM HAM</button>
+
+        <div class="status-box">
+            <div class="label">Status Buton Fizic</div>
+            <div id="ham-status" style="color: var(--text-gray);">INACTIV</div>
+        </div>
+    </div>
+
+    <div class="footer-tech">
+        <span id="net-status">Status: Conectare...</span>
+        <span>Refresh: Live (WebSockets)</span>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://echo-bd4aa-default-rtdb.europe-west1.firebasedatabase.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 1. PRIMIRE DATE: Distanța
+        db.ref('sistem/distanta').on('value', (snap) => {
+            document.getElementById('dist-val').innerText = (snap.val() || 0) + " cm";
+        });
+
+        // 2. PRIMIRE DATE: Status Buton Fizic (de la Arduino/ESP)
+        db.ref('trigger_buton').on('value', (snap) => {
+            const statusEl = document.getElementById('ham-status');
+            if(snap.val() == 1) {
+                statusEl.innerText = "BUTON APĂSAT PE ROBOT!";
+                statusEl.className = "active-alert";
+            } else {
+                statusEl.innerText = "INACTIV";
+                statusEl.className = "";
+            }
+        });
+
+        // 3. TRIMITERE DATE: Comanda HAM HAM de pe site
+        function trimiteHam() {
+            // Scriem în Firebase la o cale nouă numită 'comanda_voce' sau 'ham_ham'
+            // Robotul tău (Arduino) trebuie să asculte această cale
+            db.ref('comanda_ham').set(1);
+            
+            console.log("Comandă trimisă!");
+
+            // Resetăm după 2 secunde (ca să poată fi trimisă din nou)
+            setTimeout(() => {
+                db.ref('comanda_ham').set(0);
+            }, 2000);
+        }
+
+        // Status Conexiune
+        db.ref('.info/connected').on('value', (snap) => {
+            document.getElementById('net-status').innerText = snap.val() ? "Status: Online" : "Status: Offline";
+        });
+    </script>
+</body>
+</html>
