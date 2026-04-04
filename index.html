@@ -2,78 +2,48 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>ECHO RT - Firebase Command Center</title>
+    <title>ECHO RT - Command Center</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --bg: #020617; --card: #0f172a; --cyan: #00f2ff; --text: #f8fafc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 700px; }
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #1e293b; text-align: center; }
-        .full { grid-column: 1 / span 2; }
-        .val { font-size: 3rem; font-weight: bold; color: var(--cyan); display: block; }
-        .time { font-family: monospace; font-size: 1.5rem; color: #64748b; }
-    </style>
-</head>
-<body>
+        :root {
+            --bg: #020617; --card: #0f172a; --cyan: #00f2ff;
+            --green: #22c55e; --orange: #f59e0b; --red: #ef4444;
+            --text: #f8fafc; --subtext: #64748b;
+        }
 
-    <h1 style="color: var(--cyan)">ECHO RT <span style="color:white">MONITOR</span></h1>
+        body { 
+            background-color: var(--bg); color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; margin: 0; padding: 40px 20px;
+        }
 
-    <div class="dashboard">
-        <div class="card full">
-            <div style="text-transform: uppercase; font-size: 0.8rem; color: #64748b;">Ultima Apăsare Buton (Fixă în DB)</div>
-            <div id="display-ora" class="val">--:--:--</div>
-            <div id="radar-status" style="margin-top:10px; font-weight:bold;">Sincronizare...</div>
-        </div>
+        .header { text-align: center; margin-bottom: 40px; }
+        .dashboard { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
+            width: 100%; max-width: 800px; 
+        }
 
-        <div class="card">
-            <div style="text-transform: uppercase; font-size: 0.8rem; color: #64748b;">Distanță</div>
-            <div id="display-dist" class="val">-- cm</div>
-        </div>
+        .card { 
+            background: var(--card); border: 1px solid #1e293b; 
+            padding: 30px; border-radius: 24px; text-align: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
 
-        <div class="card">
-            <div style="text-transform: uppercase; font-size: 0.8rem; color: #64748b;">Status</div>
-            <div id="display-alert" class="val" style="font-size: 1.5rem;">---</div>
-        </div>
-    </div>
+        .full-width { grid-column: 1 / span 2; }
+        .label { color: var(--subtext); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 15px; display: block; }
+        .value { font-size: 4rem; font-weight: 800; display: block; line-height: 1; margin: 10px 0; }
+        
+        /* Culori Status */
+        .st-siguranta { color: var(--green); }
+        .st-obstacol { color: var(--orange); }
+        .st-pericol { color: var(--red); animation: pulse 1s infinite; }
 
-    <script>
-        // Configurația ta din poza
-        const firebaseConfig = { databaseURL: "https://echo-bd4aa-default-rtdb.europe-west1.firebasedatabase.app/" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // 1. Citim Distanța Live
-        db.ref('sistem/distanta').on('value', (s) => {
-            const d = s.val();
-            document.getElementById('display-dist').innerText = d + " cm";
-            
-            const alert = document.getElementById('display-alert');
-            if(d > 0 && d <= 10) { alert.innerText = "PERICOL"; alert.style.color = "#ef4444"; }
-            else { alert.innerText = "OK"; alert.style.color = "#22c55e"; }
-            
-            // Watchdog (Radar activ)
-            document.getElementById('radar-status').innerText = "● RADAR ONLINE";
-            document.getElementById('radar-status').style.color = "#22c55e";
-        });
-
-        // 2. ORA FIXĂ (Persistența)
-        // Citim cheia "ultima_ora" din poza ta
-        db.ref('ultima_ora').on('value', (s) => {
-            const t = s.val();
-            if(!t) return;
-
-            let dataObiect;
-            // Daca in Firebase e text (ca in poza "03:31"), il afisam direct
-            if(typeof t === "string") {
-                document.getElementById('display-ora').innerText = t;
-            } 
-            // Daca e timestamp (numar), il convertim frumos
-            else {
-                dataObiect = new Date(t);
-                document.getElementById('display-ora').innerText = dataObiect.toLocaleTimeString('ro-RO');
-            }
-        });
-    </script>
-</body>
-</html>
+        /* Ceas Live Dreapta Jos */
+        .live-clock-fixed {
+            position: fixed; bottom: 20px; right: 25px;
+            font-family: 'Courier New', monospace;
+            color: var(--subtext); font-size: 1.1rem;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 5px 15px; border-radius: 8
